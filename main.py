@@ -1,10 +1,11 @@
 from hashlib import sha256
 import json
 import os, struct
+import socket
 
 class Block:
-    def __init__(self, index, previous_hash, data, owner_id, nonce=0):
-        self.owner = owner_id
+    def __init__(self, index, previous_hash, data, owner, nonce=0):
+        self.owner = owner
         self.index = index
         self.previous_hash = previous_hash
         self.data = data
@@ -21,7 +22,7 @@ class Block:
         return self.hash
     
     def __str__(self):
-        return f"""Owner: {self.owner}\
+        return f"""Owner: {self.owner}
 Index: {self.index}
 Previous hash: {self.previous_hash}
 Data: {self.data}
@@ -37,37 +38,72 @@ class Blockchain():
         # self.users_ips = self.join_blockchain(blockchain_address)
         self.chain = list()
         self.my_id = struct.unpack('I', os.urandom(4))[0]
+        self.my_ip = self.get_my_ip()
+        self.owners_ip = dict()
 
     def join_blockchain(self, blockchain_address):
         # return {"Chain": chain, "UserIps": set(users_ips)}
+        self.listen_for_ips()
+        self.listen_for_blocks()
         pass
 
     def publish_block(self, block: Block, block_hash):
+        #port 50000
+        tmp_blockchain = new
         return True
 
     def listen_for_blocks(self):
+        #port 50000
         pass
+
+    def wait_for_votes(self):
+        #port 50001
+        pass
+
+    def vote_for_block(self):
+        pass
+
+    def listen_for_ips(self):
+        #port 50002
+        pass
+
+    def get_my_ip(self):
+        try:
+            # get the host name
+            host_name = socket.gethostname()
+            # get the IP address
+            host_ip = socket.gethostbyname(host_name)
+            return host_ip
+        except socket.error as err:
+            print(f"Unable to get Hostname and IP. Error: {str(err)}")
+
 
     @property
     def block_owners(self):
-        return set(x["Block"].owner_id for x in self.chain)
+        return set(x["Block"].owner for x in self.chain)
     
     def create_blockchain(self, data):
-        new_block = Block(owner_id=self.my_id, 
+        #create initial block
+        new_block = Block(owner=self.my_id, 
                           data=data, 
                           index=len(self.chain),
                           previous_hash="0")
         new_block_hash = new_block.mine_block()
         self.chain.append({"Block": new_block, "BlockHash": new_block_hash})
+        self.owners_ip[self.my_id] = self.my_ip 
+        self.publish_block(block=new_block, block_hash=new_block_hash)
         
     def add_block(self, data):
-        new_block = Block(owner_id=self.my_id, 
+        new_block = Block(owner=self.my_id, 
                           data=data, 
                           index=len(self.chain),
                           previous_hash=self.chain[-1]["BlockHash"])
         new_block_hash = new_block.mine_block()
         if self.publish_block(new_block, new_block_hash):
             self.chain.append({"Block": new_block, "BlockHash": new_block_hash})
+
+    def validate_blockchain(self, block: Block, block_hash):
+        return block.hash == block_hash
 
 
             
@@ -77,3 +113,5 @@ bc.create_blockchain("xd")
 bc.add_block("hehehe")
 print(bc.chain[0]["Block"])
 print(bc.chain[1]["Block"])
+print(bc.block_owners)
+print(bc.owners_ip)
