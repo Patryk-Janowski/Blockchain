@@ -2,8 +2,7 @@ from hashlib import sha256
 import json
 import os, struct
 import socket
-import JSONpath
-
+from jsonpath import JSONPath
 
 class Block:
     def __init__(self, index, previous_hash, data, owner, nonce=0):
@@ -22,6 +21,9 @@ class Block:
         while not self.hash.startswith('1' * 4):
             self.nonce += 1
         return self.hash
+    
+    def validate_block(self):
+        return self.hash.startswith('1' * 4)
     
     def __str__(self):
         return f"""Owner: {self.owner}
@@ -117,8 +119,17 @@ class Blockchain():
         self.publish_block(new_block, new_block_hash)
         
             
-    def validate_blockchain(self, block: Block, block_hash):
-        return block.hash == block_hash and self.chain
+    def validate_blockchain(self, blockchain: list({"Block": Block, "BlockHash": str})):
+        for i, b in enumerate(blockchain):
+            if not b["Block"].validate_block() and \
+            (blockchain[i]["BlockHash"] == b["Block"].hash and
+            blockchain[i]["Block"].previous_hash == blockchain[i-1]["BlockHash"]):
+                return False
+        return True
+
+    
+    def get_block_with_hash(self, block_hash) -> Block:
+        return list(filter(lambda x: x["BlockHash"]==block_hash, self.chain))[0]["Block"]
  
     
 bc = Blockchain(1)
@@ -126,5 +137,7 @@ bc.create_blockchain("xd")
 bc.create_block("hehehe")
 print(bc.chain[0]["Block"])
 print(bc.chain[1]["Block"])
-print(bc.block_owners)
+hash_of_second_block = bc.chain[1]["BlockHash"]
+print(bc.get_block_with_hash(hash_of_second_block).previous_hash)
+print(bc.validate_blockchain(bc.chain))
 print(bc.owners_ip)
