@@ -21,10 +21,11 @@ if __name__ == "__main__":
     bc.create_blockchain("xd")
     bc.create_block("hehehe")
     # print(bc.chain[1]["Block"].dump_block())
+    serialized_chain = bc.serialize_chain()
+    print(serialized_chain)
 
-    print(json.dumps(bc.chain, default=Block.serialize_block))
-    # print(bc.pub_key.public_bytes(encoding="UTF-8", format="JSON"))
-
+    deserialized_chain = bc.deserialize_chain(serialized_chain)
+    print(deserialized_chain[1]["Block"])
 
     # print(bc.chain[0])
     # print(bc.chain[1]["Block"])

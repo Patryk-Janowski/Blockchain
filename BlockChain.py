@@ -103,6 +103,18 @@ class Blockchain(CryptOperations):
             blockchain[i]["Block"].previous_hash == blockchain[i-1]["BlockHash"]):
                 return False
         return True
+    
+    def serialize_chain(self):
+        return json.dumps(self.chain, default=Block.serialize_block)
 
-    def deserialize_chain(self):
-        pass
+    def deserialize_chain(self, json_chain_str: str):
+        json_chain = json.loads(json_chain_str)
+        def deserialize_util(x):
+            return {"Block":Block(
+                        owner_key=x['Block']['owner_key'], 
+                        index=x['Block']['index'], 
+                        previous_hash=x['Block']['previous_hash'], 
+                        data=x['Block']['data'], 
+                        nonce=x['Block']['nonce']),
+                    "BlockHash": x["BlockHash"]}
+        return list(map(deserialize_util, json_chain))
