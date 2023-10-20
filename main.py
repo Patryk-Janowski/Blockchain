@@ -1,7 +1,6 @@
 import os
 from BlockChain import Blockchain
 
-
 def remove_pem_files(directory):
     for filename in os.listdir(directory):
         if filename.endswith('.pem'):
@@ -13,15 +12,9 @@ def remove_pem_files(directory):
 
 
 if __name__ == "__main__":
+    bc = Blockchain(1)
+    bc.create_and_send_block("xd")
+    print(bc.users)
     current_directory = os.getcwd()
     remove_pem_files(current_directory)
-
-    bc = Blockchain(1)
-    bc.create_block("xd")
-    bc.create_block("hehehe")
-    serialized_chain = bc.serialize_chain()
-    deserialized_chain = bc.deserialize_chain(serialized_chain)
-    # print(deserialized_chain)
-    print(bc.chain[1]["Block"])
-    print(bc.users)
 

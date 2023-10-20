@@ -1,34 +1,29 @@
 from Block import Block
 from CryptOperations import CryptOperations
-import json
-import socket
+from NetworkOperations import NetworkOperations
 from concurrent.futures import ThreadPoolExecutor
+import json
 
 
-class Blockchain(CryptOperations):
+class Blockchain(CryptOperations, NetworkOperations):
     def __init__(self, blockchain_address):
         super().__init__()
+        print(self.__dict__)
         self.chain = list()
         self.my_ip = self.get_my_ip()
         self.users = {self.my_key: self.my_ip}
-        self.block_port = 50000
-        self.users_port = 50001
-        # self.users_ips = self.join_blockchain(blockchain_address)
 
-    def create_block(self, data):
+    def create_and_send_block(self, data):
         new_block = Block(owner_key=self.my_key,
                           data=data,
                           index=len(self.chain),
                           previous_hash=self.chain[-1]["BlockHash"] if self.chain else "0")
         new_block_hash = new_block.mine_block()
-        self.publish_block(new_block, new_block_hash)
+        self.append_block(new_block, new_block_hash)
+        self.send_blockchain()
 
-    def publish_block(self, block: Block, block_hash):
-        # send block
-        # wait for votes
-        if True:
-            self.chain.append({"Block": block, "BlockHash": block_hash})
-        return True
+    def append_block(self, block: Block, block_hash: str):
+        self.chain.append({"Block": block, "BlockHash": block_hash})
 
     def validate_blockchain(self, blockchain: list({"Block": Block, "BlockHash": str})):
         for i, b in enumerate(blockchain):
@@ -54,18 +49,18 @@ class Blockchain(CryptOperations):
 
     def get_block_with_hash(self, block_hash) -> Block:
         return list(filter(lambda x: x["BlockHash"] == block_hash, self.chain))[0]["Block"]
-    
+
     def send_blockchain(self):
         chain_bytes = self.serialize_chain().encode('utf-8')
         with ThreadPoolExecutor() as executor:
             executor.map(lambda ip: self.send_data_util(
-                ip, self.block_port, chain_bytes), self.user_ips)
+                ip, self.block_port, chain_bytes), self.users_ips)
 
     def listen_for_blocks(self):
-        tmp_chain = list(Block)
+        tmp_chain = self.deserialize_chain(self.receive_data_util(NetworkOperations.block_port))
         if len(tmp_chain) > len(self.chain) and self.validate_blockchain(tmp_chain):
             self.chain = tmp_chain
-            # interrupt mining
+            print("Recieved_block")
         else:
             return
 
@@ -79,19 +74,9 @@ class Blockchain(CryptOperations):
         self.send_user_info()
         self.send_blockchain()
 
-    def get_my_ip(self):
-        try:
-            # get the host name
-            host_name = socket.gethostname()
-            # get the IP address
-            host_ip = socket.gethostbyname(host_name)
-            return host_ip
-        except socket.error as err:
-            print(f"Unable to get Hostname and IP. Error: {str(err)}")
-
     def serialize_chain(self):
-        return json.dumps(self.chain, default=Block.serialize_block).encode('utf-8')
-    
+        return json.dumps(self.chain, default=Block.serialize_block)
+
     def deserialize_block(self, block_json):
         return {"Block": Block(
             owner_key=block_json['Block']['owner_key'],
@@ -104,11 +89,6 @@ class Blockchain(CryptOperations):
     def deserialize_chain(self, json_chain_str: str):
         json_chain = json.loads(json_chain_str)
         return list(map(self.deserialize_block, json_chain))
-
-    def send_data_util(ip, port, data):
-        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-            s.connect((ip, port))
-            s.sendall(data)
 
     def mineeeeeee(self):
         block_interrupt = 0
