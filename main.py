@@ -21,6 +21,7 @@ if __name__ == "__main__":
     bc.create_block("hehehe")
     serialized_chain = bc.serialize_chain()
     deserialized_chain = bc.deserialize_chain(serialized_chain)
+    # print(deserialized_chain)
     print(bc.chain[1]["Block"])
     print(bc.users)
-    print(bc.owners_ips)
+

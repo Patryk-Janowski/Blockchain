@@ -6,8 +6,12 @@ import secrets
 import base64
 
 
-
 class CryptOperations:
+
+    def __init__(self) -> None:
+        self.my_id = self.generate_secure_id()
+        self.pub_key, self.__priv_key = self.generate_keys(self.my_id)
+        self.my_key = self.serialize_rsa_public_key(self.pub_key)
 
     def generate_keys(self, prefix):
         # Generate private key

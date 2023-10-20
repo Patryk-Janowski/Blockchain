@@ -1,6 +1,6 @@
 from hashlib import sha256
 from CryptOperations import CryptOperations
-
+import time
 
 class Block:
     def __init__(self, index, previous_hash, data, owner_key, nonce=0):
@@ -21,6 +21,8 @@ class Block:
     def mine_block(self):
         self.nonce = 0
         while not self.hash.startswith('1' * 4):
+            if self.nonce % 1000 == 0:
+                time.sleep(0.1)
             self.nonce += 1
         return self.hash
 
