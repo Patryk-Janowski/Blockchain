@@ -40,3 +40,12 @@ Hash: {self.hash}"""
 
     def serialize_block(self):
         return self.__dict__
+
+    def deserialize_block(self, block_json):
+        return {"Block": Block(
+            owner_key=block_json['Block']['owner_key'],
+            index=block_json['Block']['index'],
+            previous_hash=block_json['Block']['previous_hash'],
+            data=block_json['Block']['data'],
+            nonce=block_json['Block']['nonce']),
+            "BlockHash": block_json["BlockHash"]}

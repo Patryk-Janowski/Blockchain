@@ -87,15 +87,6 @@ class Blockchain(CryptOperations, NetworkOperations):
     def deserialize_users(self, users_json_str):
         return json.loads(users_json_str)
 
-    def deserialize_block(self, block_json):
-        return {"Block": Block(
-            owner_key=block_json['Block']['owner_key'],
-            index=block_json['Block']['index'],
-            previous_hash=block_json['Block']['previous_hash'],
-            data=block_json['Block']['data'],
-            nonce=block_json['Block']['nonce']),
-            "BlockHash": block_json["BlockHash"]}
-
     def deserialize_chain(self, json_chain_str: str):
         json_chain = json.loads(json_chain_str)
         return list(map(self.deserialize_block, json_chain))
