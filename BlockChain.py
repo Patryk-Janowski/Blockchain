@@ -65,17 +65,25 @@ class Blockchain(CryptOperations, NetworkOperations):
             return
 
     def send_user_info(self):
-        # self.users
-        pass
+        users_bytes = self.serialize_users().encode('utf-8')
+        with ThreadPoolExecutor() as executor:
+            executor.map(lambda ip: self.send_data_util(
+                ip, self.block_port, users_bytes), self.users_ips)
 
     def listen_for_users(self):
-        received_users = set()
+        received_users = self.deserialize_users(self.receive_data_util(self.users_port))
         self.users.update(received_users)
         self.send_user_info()
         self.send_blockchain()
 
     def serialize_chain(self):
         return json.dumps(self.chain, default=Block.serialize_block)
+    
+    def serialize_users(self):
+        return json.dumps(self.users)
+    
+    def deserialize_users(self, users_json_str):
+        return json.loads(users_json_str)
 
     def deserialize_block(self, block_json):
         return {"Block": Block(
