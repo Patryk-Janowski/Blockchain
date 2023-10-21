@@ -60,7 +60,7 @@ class Blockchain(CryptOperations, NetworkOperations):
         tmp_chain = self.deserialize_chain(self.receive_data_util(NetworkOperations.block_port))
         if len(tmp_chain) > len(self.chain) and self.validate_blockchain(tmp_chain):
             self.chain = tmp_chain
-            print("Recieved_block")
+            print("Received_block")
         else:
             return
 
@@ -102,7 +102,7 @@ class Blockchain(CryptOperations, NetworkOperations):
         block_interrupt = 0
         block_num = 0
         while True:
-            self.create_block(f"{self.my_id}-{block_num}")
+            self.create_and_send_block(f"{self.my_id}-{block_num}")
             if block_interrupt:
                 continue
 
