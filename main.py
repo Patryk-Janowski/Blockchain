@@ -1,6 +1,7 @@
 import os
 from BlockChain import Blockchain
 
+
 def remove_pem_files(directory):
     for filename in os.listdir(directory):
         if filename.endswith('.pem'):
@@ -17,4 +18,3 @@ if __name__ == "__main__":
     print(bc.users)
     current_directory = os.getcwd()
     remove_pem_files(current_directory)
-

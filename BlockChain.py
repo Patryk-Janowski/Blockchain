@@ -57,7 +57,8 @@ class Blockchain(CryptOperations, NetworkOperations):
                 ip, self.block_port, chain_bytes), self.users_ips)
 
     def listen_for_blocks(self):
-        tmp_chain = self.deserialize_chain(self.receive_data_util(NetworkOperations.block_port))
+        tmp_chain = self.deserialize_chain(
+            self.receive_data_util(NetworkOperations.block_port))
         if len(tmp_chain) > len(self.chain) and self.validate_blockchain(tmp_chain):
             self.chain = tmp_chain
             print("Received_block")
@@ -71,17 +72,18 @@ class Blockchain(CryptOperations, NetworkOperations):
                 ip, self.block_port, users_bytes), self.users_ips)
 
     def listen_for_users(self):
-        received_users = self.deserialize_users(self.receive_data_util(self.users_port))
+        received_users = self.deserialize_users(
+            self.receive_data_util(self.users_port))
         self.users.update(received_users)
         self.send_user_info()
         self.send_blockchain()
 
     def serialize_chain(self):
         return json.dumps(self.chain, default=Block.serialize_block)
-    
+
     def serialize_users(self):
         return json.dumps(self.users)
-    
+
     def deserialize_users(self, users_json_str):
         return json.loads(users_json_str)
 

@@ -2,6 +2,7 @@ from hashlib import sha256
 from CryptOperations import CryptOperations
 import time
 
+
 class Block:
     def __init__(self, index, previous_hash, data, owner_key, nonce=0):
         self.owner_key = owner_key
