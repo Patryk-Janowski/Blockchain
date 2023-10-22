@@ -28,7 +28,7 @@ class Blockchain(CryptOperations, NetworkOperations, Block):
         new_block = Block(owner_key=self.my_key,
                           data=data,
                           index=len(self.chain),
-                          previous_hash=self.chain[-1]["BlockHash"] if self.chain else "0")
+                          previous_hash=self.chain[-1]["BlockHash"] if len(self.chain) > 0 else "first_block")
         new_block_hash = await new_block.mine_block()
         self.append_block(new_block, new_block_hash)
         await self.send_blockchain()
@@ -38,12 +38,15 @@ class Blockchain(CryptOperations, NetworkOperations, Block):
         self.chain.append({"Block": block, "BlockHash": block_hash})
 
     def validate_blockchain(self, blockchain: list({"Block": Block, "BlockHash": str})):
-        for i, b in enumerate(blockchain):
-            if not b["Block"].validate_block() and \
-                (blockchain[i]["BlockHash"] == b["Block"].hash and
+        if not blockchain[i]["Block"].validate_block():
+            return False
+        for i in range(1, len(blockchain)):
+            if  blockchain[i]["Block"].validate_block() and \
+                (blockchain[i]["BlockHash"] == blockchain[i]["Block"].hash and
                  blockchain[i]["Block"].previous_hash == blockchain[i-1]["BlockHash"]):
+                return True
+            else:
                 return False
-        return True
 
     @property
     def block_owners(self):

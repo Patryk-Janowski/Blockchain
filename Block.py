@@ -39,7 +39,7 @@ class Block:
             return self.hash
 
     def validate_block(self):
-        return self.hash.startswith('1' * Block.first_ones)
+        return self.hash.startswith('1' * Block.first_ones) and self.previous_hash is not None
 
     def __str__(self):
         return f"""Owner: {self.owner_key}
