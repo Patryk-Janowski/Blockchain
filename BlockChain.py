@@ -87,6 +87,7 @@ class Blockchain(CryptOperations, NetworkOperations, Block):
 
     async def handle_blocks(self, reader, writer):
         tmp_chain = self.deserialize_chain(await self.receive_data_util(reader, writer))
+        print(f"received chain {tmp_chain}")
         if len(tmp_chain) > len(self.chain) and self.validate_blockchain(tmp_chain):
             self.chain = tmp_chain
             print("Received_block")

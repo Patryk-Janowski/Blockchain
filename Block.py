@@ -29,7 +29,6 @@ class Block:
         self.nonce = 0
         while not self.hash.startswith('1' * Block.first_ones) and not Block.interrupt_event.is_set():
             if self.nonce % 10000 == 0:
-                print(f"sleeping after {self.nonce} checks")
                 asyncio.sleep(0.1)
             self.nonce += 1
         print(f'Mined block {self.__dict__}')
