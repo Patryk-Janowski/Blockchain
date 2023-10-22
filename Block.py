@@ -1,15 +1,21 @@
 from hashlib import sha256
 from CryptOperations import CryptOperations
-import time
+import asyncio
 
 
 class Block:
+    first_ones = 5
+
     def __init__(self, index, previous_hash, data, owner_key, nonce=0):
         self.owner_key = owner_key
         self.index = index
         self.previous_hash = previous_hash
         self.data = data
         self.nonce = nonce
+
+    @classmethod
+    def set_interrupt_event(cls, event):
+        cls.interrupt_event = event
 
     @property
     def hash(self) -> int:
@@ -21,14 +27,16 @@ class Block:
 
     def mine_block(self):
         self.nonce = 0
-        while not self.hash.startswith('1' * 4):
-            if self.nonce % 1000 == 0:
-                time.sleep(0.1)
+        while not self.hash.startswith('1' * Block.first_ones) and not Block.interrupt_event.is_set():
+            if self.nonce % 10000 == 0:
+                print(f"sleeping after {self.nonce} checks")
+                asyncio.sleep(0.1)
             self.nonce += 1
+        print(f'Mined block {self.__dict__}')
         return self.hash
 
     def validate_block(self):
-        return self.hash.startswith('1' * 4)
+        return self.hash.startswith('1' * Block.first_ones)
 
     def __str__(self):
         return f"""Owner: {self.owner_key}
@@ -39,6 +47,8 @@ Nonce: {self.nonce}
 Hash: {self.hash}"""
 
     def serialize_block(self):
+        # new_dict = self.__dict__.copy()
+        # new_dict.pop("c", None)
         return self.__dict__
 
     def deserialize_block(self, block_json):
