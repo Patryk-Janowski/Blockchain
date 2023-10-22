@@ -30,5 +30,7 @@ class NetworkOperations:
             data_chunk = await reader.read(1024)
             if not data_chunk:
                 break
+            else:
+                print("RECEIVED DATA")
             data_received.extend(data_chunk)
         return data_received.decode()  # Decoding bytes to string

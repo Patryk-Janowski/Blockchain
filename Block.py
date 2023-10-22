@@ -1,6 +1,5 @@
 from hashlib import sha256
 from CryptOperations import CryptOperations
-from BlockChain import Blockchain
 import asyncio
 
 
@@ -55,8 +54,8 @@ Hash: {self.hash}"""
 
     def deserialize_block(self, block_json):
         return {"Block": Block(
-            owner_key=(int(block_json['Block']['owner_key'].split(",")[0][1:]), 
-                       int(block_json['Block']['owner_key'].split(",")[1][:-1])),
+            owner_key=(int(block_json['Block']['owner_key'][0]), 
+                       int(block_json['Block']['owner_key'][1])),
             index=block_json['Block']['index'],
             previous_hash=block_json['Block']['previous_hash'],
             data=block_json['Block']['data'],

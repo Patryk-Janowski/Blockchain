@@ -51,7 +51,8 @@ class Blockchain(CryptOperations, NetworkOperations, Block):
 
     @property
     def users_ips(self):
-        return set([x for x in self.users.values() if x != self.my_ip])
+        return set(self.users.values())
+        # return set([x for x in self.users.values() if x != self.my_ip])
 
     def get_block(self, index) -> Block:
         return self.chain[index]["Block"]
@@ -98,6 +99,9 @@ class Blockchain(CryptOperations, NetworkOperations, Block):
 
     def deserialize_chain(self, json_chain_str: str):
         json_chain = json.loads(json_chain_str)
+        print("Deserializing block")
+        print(json_chain)
+        print(type(json_chain))
         return list(map(self.deserialize_block, json_chain))
 
     async def handle_users(self, reader, writer):
