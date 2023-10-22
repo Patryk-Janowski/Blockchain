@@ -1,4 +1,4 @@
 cryptography
 secrets
-base64
+pybase64
 asyncio
