@@ -25,7 +25,7 @@ class Block:
     def public_key(self):
         return CryptOperations.deserialize_rsa_public_key(self.owner_key)
 
-    def mine_block(self):
+    async def mine_block(self):
         self.nonce = 0
         while not self.hash.startswith('1' * Block.first_ones) and not Block.interrupt_event.is_set():
             if self.nonce % 10000 == 0:

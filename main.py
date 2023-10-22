@@ -15,6 +15,6 @@ def remove_pem_files(directory):
 if __name__ == "__main__":
     current_directory = os.getcwd()
     remove_pem_files(current_directory)
-    bc = Blockchain("XD", "255.255.255.255")
+    bc = Blockchain("XD", "192.168.0.12")
     asyncio.run(bc.run_all())
   

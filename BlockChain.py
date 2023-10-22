@@ -16,14 +16,14 @@ class Blockchain(CryptOperations, NetworkOperations, Block):
         self.interrupt_event = asyncio.Event()
         Block.set_interrupt_event(self.interrupt_event)
 
-    def create_and_send_block(self, data):
+    async def create_and_send_block(self, data):
         new_block = Block(owner_key=self.my_key,
                           data=data,
                           index=len(self.chain),
                           previous_hash=self.chain[-1]["BlockHash"] if self.chain else "0")
-        new_block_hash = new_block.mine_block()
+        new_block_hash = await new_block.mine_block()
         self.append_block(new_block, new_block_hash)
-        self.send_blockchain()
+        await self.send_blockchain()
 
     def append_block(self, block: Block, block_hash: str):
         self.chain.append({"Block": block, "BlockHash": block_hash})
@@ -53,18 +53,24 @@ class Blockchain(CryptOperations, NetworkOperations, Block):
     def get_block_with_hash(self, block_hash) -> Block:
         return list(filter(lambda x: x["BlockHash"] == block_hash, self.chain))[0]["Block"]
 
-    def send_blockchain(self):
+    async def send_blockchain(self):
         chain_bytes = self.serialize_chain().encode('utf-8')
         print("sending data")
-        with ThreadPoolExecutor() as executor:
-            executor.map(lambda ip: self.send_data_util(
-                ip, self.block_port, chain_bytes), self.users_ips)
+        for ip in self.users_ips:
+            await self.send_data_util(ip, self.block_port, chain_bytes)
 
-    def send_user_info(self):
+        # with ThreadPoolExecutor() as executor:
+        #     executor.map(lambda ip: self.send_data_util(
+        #         ip, self.block_port, chain_bytes), self.users_ips)
+
+    async def send_user_info(self):
         users_bytes = self.serialize_users().encode('utf-8')
-        with ThreadPoolExecutor() as executor:
-            executor.map(lambda ip: self.send_data_util(
-                ip, self.block_port, users_bytes), self.users_ips)
+        print("sending users")
+        for ip in self.users_ips:
+            await self.send_data_util(ip, self.block_port, users_bytes)
+        # with ThreadPoolExecutor() as executor:
+        #     executor.map(lambda ip: self.send_data_util(
+        #         ip, self.block_port, users_bytes), self.users_ips)
 
     def serialize_chain(self):
         return json.dumps(self.chain, default=Block.serialize_block)
@@ -82,8 +88,8 @@ class Blockchain(CryptOperations, NetworkOperations, Block):
     async def handle_users(self, reader, writer):
         received_users = self.deserialize_users(await self.receive_data_util(reader, writer))
         self.users.update(received_users)
-        self.send_user_info()
-        self.send_blockchain()
+        await self.send_user_info()
+        await self.send_blockchain()
 
     async def handle_blocks(self, reader, writer):
         tmp_chain = self.deserialize_chain(await self.receive_data_util(reader, writer))
@@ -110,7 +116,7 @@ class Blockchain(CryptOperations, NetworkOperations, Block):
     async def const_mine(self):
         block_num = 0
         while True:
-            self.create_and_send_block(f"{self.my_id}-{block_num}")
+            await self.create_and_send_block(f"{self.my_id}-{block_num}")
             block_num += 1
             await asyncio.sleep(0.1)
 
