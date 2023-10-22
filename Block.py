@@ -33,13 +33,16 @@ class Block:
             self.nonce += 1
         if Block.interrupt_event.is_set():
             print(f'Mining was interrupted')
-            return
+            return False
         else:
             print(f'Mined block {self.__dict__}')
             return self.hash
 
     def validate_block(self):
-        return self.hash.startswith('1' * Block.first_ones) and self.previous_hash is not None
+        return self.hash.startswith('1' * Block.first_ones) and \
+            self.previous_hash is not None and \
+            self.previous_hash != "None"
+            # CryptOperations.is_valid_sha256(self.previous_hash)
 
     def __str__(self):
         return f"""Owner: {self.owner_key}
@@ -54,7 +57,7 @@ Hash: {self.hash}"""
 
     def deserialize_block(self, block_json):
         return {"Block": Block(
-            owner_key=(int(block_json['Block']['owner_key'][0]), 
+            owner_key=(int(block_json['Block']['owner_key'][0]),
                        int(block_json['Block']['owner_key'][1])),
             index=block_json['Block']['index'],
             previous_hash=block_json['Block']['previous_hash'],

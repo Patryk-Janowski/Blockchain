@@ -22,23 +22,27 @@ class Blockchain(CryptOperations, NetworkOperations, Block):
     def print_chain(self, chain):
         for b in chain:
             print(b["Block"])
+            print(b["BlockHash"])
             print("*"*100)
 
     async def create_and_send_block(self, data):
         new_block = Block(owner_key=self.my_key,
                           data=data,
                           index=len(self.chain),
-                          previous_hash=self.chain[-1]["BlockHash"] if len(self.chain) > 0 else "first_block")
+                          previous_hash=self.chain[-1]["Block"].hash if len(self.chain) > 0 else "first_block")
         new_block_hash = await new_block.mine_block()
-        self.append_block(new_block, new_block_hash)
-        await self.send_blockchain()
-        await self.send_user_info()
+        if new_block_hash:
+            self.append_block(new_block, new_block_hash)
+            await self.send_blockchain()
+            await self.send_user_info()
+        else:
+            print("Skipping mining block")
 
     def append_block(self, block: Block, block_hash: str):
         self.chain.append({"Block": block, "BlockHash": block_hash})
 
     def validate_blockchain(self, blockchain: list({"Block": Block, "BlockHash": str})):
-        if not blockchain[i]["Block"].validate_block():
+        if not blockchain[0]["Block"].validate_block():
             return False
         for i in range(1, len(blockchain)):
             if  blockchain[i]["Block"].validate_block() and \

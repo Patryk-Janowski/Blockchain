@@ -4,7 +4,7 @@ from cryptography.hazmat.backends import default_backend
 from cryptography.exceptions import InvalidSignature
 import base64
 import random
-
+import re
 
 class CryptOperations:
 
@@ -35,6 +35,13 @@ class CryptOperations:
                 format=serialization.PublicFormat.SubjectPublicKeyInfo,
             ))
         return public_key, private_key
+    
+    @classmethod
+    def is_valid_sha256(self, s):
+        if len(s) != 64:
+            return False
+        return bool(re.match('^[a-f0-9]{64}$', s))
+    
 
     def sign_message(self, message):
         signature = self.__priv_key.sign(
