@@ -15,7 +15,6 @@ class Blockchain(CryptOperations, NetworkOperations, Block):
         self.users = {self.my_key: self.my_ip, first_user_key: first_user_ip}
         self.interrupt_event = asyncio.Event()
         Block.set_interrupt_event(self.interrupt_event)
-        self.send_user_info()
 
     def create_and_send_block(self, data):
         new_block = Block(owner_key=self.my_key,
@@ -114,7 +113,7 @@ class Blockchain(CryptOperations, NetworkOperations, Block):
             block_num += 1
             await asyncio.sleep(0.1)
 
-    async def main(self):
+    async def run_all(self):
         await asyncio.gather(
             self.listen_for_users(),
             self.listen_for_blocks(),
