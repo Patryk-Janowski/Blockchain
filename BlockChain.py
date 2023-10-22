@@ -15,7 +15,7 @@ class Blockchain(CryptOperations, NetworkOperations, Block):
         print(f"my_str_id: {self.serialize_users()}")
         if first_user_id:
             self.users.update(self.deserialize_users(first_user_id))
-        self.users[self.my_key] = self.my_ip
+            print(self.users)
         self.interrupt_event = asyncio.Event()
         Block.set_interrupt_event(self.interrupt_event)
 
@@ -51,8 +51,7 @@ class Blockchain(CryptOperations, NetworkOperations, Block):
 
     @property
     def users_ips(self):
-        return set(self.users.values())
-        # return set([x for x in self.users.values() if x != self.my_ip])
+        return set([x for x in self.users.values() if x != self.my_ip])
 
     def get_block(self, index) -> Block:
         return self.chain[index]["Block"]
@@ -65,7 +64,7 @@ class Blockchain(CryptOperations, NetworkOperations, Block):
 
     async def send_blockchain(self):
         chain_bytes = self.serialize_chain().encode('utf-8')
-        print("sending data")
+        print("Sending chain")
         for ip in self.users_ips:
             await self.send_data_util(ip, self.block_port, chain_bytes)
         # with ThreadPoolExecutor() as executor:
@@ -75,9 +74,9 @@ class Blockchain(CryptOperations, NetworkOperations, Block):
     async def send_user_info(self):
         asyncio.sleep(1)
         users_bytes = self.serialize_users().encode('utf-8')
-        print(f"Sending user info {users_bytes}")
         for ip in self.users_ips:
-            await self.send_data_util(ip, self.block_port, users_bytes)
+            print(f"Sending user info")
+            await self.send_data_util(ip, self.users_port, users_bytes)
         # with ThreadPoolExecutor() as executor:
         #     executor.map(lambda ip: self.send_data_util(
         #         ip, self.block_port, users_bytes), self.users_ips)
@@ -99,29 +98,29 @@ class Blockchain(CryptOperations, NetworkOperations, Block):
 
     def deserialize_chain(self, json_chain_str: str):
         json_chain = json.loads(json_chain_str)
-        print("Deserializing block")
-        print(json_chain)
-        print(type(json_chain))
         return list(map(self.deserialize_block, json_chain))
 
     async def handle_users(self, reader, writer):
         received_users = self.deserialize_users(await self.receive_data_util(reader, writer))
-        print(f"Received users: {received_users}")
         self.users.update(received_users)
-        await self.send_user_info()
-        await self.send_blockchain()
+        print(f"BlockChain users ips: {self.users_ips}")
+
 
     async def handle_blocks(self, reader, writer):
         tmp_chain = self.deserialize_chain(await self.receive_data_util(reader, writer))
         print(f"Received chain")
-        self.print_chain(tmp_chain)
-        print("Verifying chain\n...")
-        if len(tmp_chain) > len(self.chain) and self.validate_blockchain(tmp_chain):
-            self.chain = tmp_chain
+        if len(tmp_chain) > len(self.chain):
             print("Received longer chain")
-            self.interrupt_event.set()
+            print("Verifying chain\n...")
+            if self.validate_blockchain(tmp_chain):
+                self.chain = tmp_chain
+                print("Chain was valid")
+                self.interrupt_event.set()
+                self.print_chain(self.chain)
+            else:
+                print("Chain was invalid")
         else:
-            print("Ignoring chain")
+            print("Chain was shorter")
         print("\n")
 
     async def listen_for_users(self):

@@ -17,10 +17,10 @@ EXPOSE 50001
 # Define environment variable for better debugging
 ENV PYTHONUNBUFFERED=1
 
-RUN apt-get update && \
-    apt-get install -y net-tools inetutils-ping && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+# RUN apt-get update && \
+#     apt-get install -y net-tools inetutils-ping && \
+#     apt-get clean && \
+#     rm -rf /var/lib/apt/lists/*
 
 # Set the entry point to bash
 ENTRYPOINT ["/bin/bash"]
