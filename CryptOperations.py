@@ -2,8 +2,8 @@ from cryptography.hazmat.primitives import serialization, hashes
 from cryptography.hazmat.primitives.asymmetric import rsa, padding
 from cryptography.hazmat.backends import default_backend
 from cryptography.exceptions import InvalidSignature
-import secrets
 import base64
+import random
 
 
 class CryptOperations:
@@ -65,7 +65,7 @@ class CryptOperations:
 
     def generate_secure_id(self, length=32):
         # Generate random bytes
-        random_bytes = secrets.token_bytes(length)
+        random_bytes = int.to_bytes(random.getrandbits(length * 8), length, 'big')
         # Encode the bytes in URL-safe base64 format
         secure_id = base64.urlsafe_b64encode(random_bytes).rstrip(b'=')
         return secure_id.decode('utf-8')

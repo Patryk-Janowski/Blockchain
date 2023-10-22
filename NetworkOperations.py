@@ -18,8 +18,11 @@ class NetworkOperations:
     async def send_data_util(self, ip, port, data):
         print("sending data")
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-            s.connect((ip, port))
-            s.sendall(data)
+            try:
+                s.connect((ip, port))
+                s.sendall(data)
+            except:
+               print(f"Failed to connect to IP: {ip}, Port: {port}")
 
     async def receive_data_util(self, reader, writer):
         data_received = bytearray()

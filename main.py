@@ -1,20 +1,15 @@
+#!/usr/bin/env python3
 import os
 from BlockChain import Blockchain
 import asyncio
-
-def remove_pem_files(directory):
-    for filename in os.listdir(directory):
-        if filename.endswith('.pem'):
-            try:
-                os.remove(os.path.join(directory, filename))
-                print(f'Removed {filename}')
-            except Exception as e:
-                print(f'Error removing {filename}: {e}')
-
+import argparse
 
 if __name__ == "__main__":
-    current_directory = os.getcwd()
-    remove_pem_files(current_directory)
-    bc = Blockchain("XD", "192.168.0.12")
+    parser = argparse.ArgumentParser(description="A simple argparse example.")
+    parser.add_argument("-i", "--id", help="first user id", type=str)
+    args = parser.parse_args()
+
+    bc = Blockchain(args.id)
+    print(bc.users_ips)
     asyncio.run(bc.run_all())
   

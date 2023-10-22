@@ -1,5 +1,6 @@
 from hashlib import sha256
 from CryptOperations import CryptOperations
+from BlockChain import Blockchain
 import asyncio
 
 
@@ -31,8 +32,12 @@ class Block:
             if self.nonce % 10000 == 0:
                 asyncio.sleep(0.1)
             self.nonce += 1
-        print(f'Mined block {self.__dict__}')
-        return self.hash
+        if Block.interrupt_event.is_set():
+            print(f'Mining was interrupted')
+            return
+        else:
+            print(f'Mined block {self.__dict__}')
+            return self.hash
 
     def validate_block(self):
         return self.hash.startswith('1' * Block.first_ones)
@@ -46,13 +51,12 @@ Nonce: {self.nonce}
 Hash: {self.hash}"""
 
     def serialize_block(self):
-        # new_dict = self.__dict__.copy()
-        # new_dict.pop("c", None)
         return self.__dict__
 
     def deserialize_block(self, block_json):
         return {"Block": Block(
-            owner_key=block_json['Block']['owner_key'],
+            owner_key=(int(block_json['Block']['owner_key'].split(",")[0][1:]), 
+                       int(block_json['Block']['owner_key'].split(",")[1][:-1])),
             index=block_json['Block']['index'],
             previous_hash=block_json['Block']['previous_hash'],
             data=block_json['Block']['data'],
