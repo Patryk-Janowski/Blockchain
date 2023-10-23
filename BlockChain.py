@@ -22,7 +22,7 @@ class Blockchain(CryptOperations, NetworkOperations, Block):
     def print_chain(self, chain):
         for b in chain:
             print(b["Block"])
-            print(b["BlockHash"])
+            print(f"BlockHash: {b['BlockHash']}")
             print("*"*100)
 
     async def create_and_send_block(self, data):
@@ -45,12 +45,16 @@ class Blockchain(CryptOperations, NetworkOperations, Block):
         if not blockchain[0]["Block"].validate_block():
             return False
         for i in range(1, len(blockchain)):
-            if  blockchain[i]["Block"].validate_block() and \
+            if blockchain[i]["Block"].validate_block() and \
                 (blockchain[i]["BlockHash"] == blockchain[i]["Block"].hash and
                  blockchain[i]["Block"].previous_hash == blockchain[i-1]["BlockHash"]):
                 return True
             else:
                 return False
+
+    def blockchain_to_file(self):
+        with open(f"{self.my_id}_chain.json", "w") as f:
+            f.write(self.serialize_chain())
 
     @property
     def block_owners(self):
@@ -71,7 +75,7 @@ class Blockchain(CryptOperations, NetworkOperations, Block):
 
     async def send_blockchain(self):
         chain_bytes = self.serialize_chain().encode('utf-8')
-        print("Sending chain")
+        print(f"Sending chain to {self.users_ips}")
         for ip in self.users_ips:
             await self.send_data_util(ip, self.block_port, chain_bytes)
         # with ThreadPoolExecutor() as executor:
@@ -81,8 +85,8 @@ class Blockchain(CryptOperations, NetworkOperations, Block):
     async def send_user_info(self):
         asyncio.sleep(1)
         users_bytes = self.serialize_users().encode('utf-8')
+        print(f"Sending user info to {self.users_ips}")
         for ip in self.users_ips:
-            print(f"Sending user info")
             await self.send_data_util(ip, self.users_port, users_bytes)
         # with ThreadPoolExecutor() as executor:
         #     executor.map(lambda ip: self.send_data_util(
@@ -109,26 +113,27 @@ class Blockchain(CryptOperations, NetworkOperations, Block):
 
     async def handle_users(self, reader, writer):
         received_users = self.deserialize_users(await self.receive_data_util(reader, writer))
-        self.users.update(received_users)
-        print(f"BlockChain users ips: {self.users_ips}")
-
+        if received_users != self.users:
+            self.users.update(received_users)
+            print(f"New Users!!!\nBlockChain users ips: {self.users_ips}")
 
     async def handle_blocks(self, reader, writer):
         tmp_chain = self.deserialize_chain(await self.receive_data_util(reader, writer))
         print(f"Received chain")
         if len(tmp_chain) > len(self.chain):
             print("Received longer chain")
-            print("Verifying chain\n...")
+            print("Verifying chain...")
             if self.validate_blockchain(tmp_chain):
                 self.chain = tmp_chain
                 print("Chain was valid")
                 self.interrupt_event.set()
                 self.print_chain(self.chain)
+                self.blockchain_to_file()
             else:
                 print("Chain was invalid")
         else:
             print("Chain was shorter")
-        print("\n")
+        print("")
 
     async def listen_for_users(self):
         server = await asyncio.start_server(

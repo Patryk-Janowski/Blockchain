@@ -16,7 +16,6 @@ class NetworkOperations:
             print(f"Unable to get Hostname and IP. Error: {str(err)}")
 
     async def send_data_util(self, ip, port, data):
-        print("sending data")
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             try:
                 s.connect((ip, port))
@@ -30,7 +29,5 @@ class NetworkOperations:
             data_chunk = await reader.read(1024)
             if not data_chunk:
                 break
-            else:
-                print("RECEIVED DATA")
             data_received.extend(data_chunk)
         return data_received.decode()  # Decoding bytes to string
