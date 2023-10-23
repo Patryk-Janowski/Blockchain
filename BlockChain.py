@@ -112,10 +112,9 @@ class Blockchain(CryptOperations, NetworkOperations, Block):
         return list(map(self.deserialize_block, json_chain))
 
     async def handle_users(self, reader, writer):
-        received_users = self.deserialize_users(await self.receive_data_util(reader, writer))
-        if received_users != self.users:
-            self.users.update(received_users)
-            print(f"New Users!!!\nBlockChain users ips: {self.users_ips}")
+        received_users = self.deserialize_users(await self.receive_data_util(reader, writer)) 
+        self.users.update(received_users)
+        print(f"Received BlockChain users ips: {self.users_ips}")
 
     async def handle_blocks(self, reader, writer):
         tmp_chain = self.deserialize_chain(await self.receive_data_util(reader, writer))
